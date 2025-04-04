@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TicTacToe.MainPage"
+             Title="MAUI Tic-Tac-Toe">
+
+    <StackLayout Spacing="10" Padding="20">
+
+        <Label HorizontalOptions="End" x:Name="Player1WinsLabel" Text="Player 1 Wins: 0"/>
+        <Label HorizontalOptions="End" x:Name="Player2WinsLabel" Text="Player 2 Wins: 0"/>
+        <Button HorizontalOptions="End" Text="Reset Win Tally" Clicked="OnResetTallyClicked"/>
+
+        <Grid RowSpacing="10" ColumnSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="150"/>
+                <RowDefinition Height="150"/>
+                <RowDefinition Height="150"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Row="0" Grid.Column="0"
+            Clicked="OnButtonClicked"
+            x:Name="Button0"/>
+            <Button Grid.Row="0" Grid.Column="1"
+            Clicked="OnButtonClicked"
+            x:Name="Button1"/>
+            <Button Grid.Row="0" Grid.Column="2"
+            Clicked="OnButtonClicked"
+            x:Name="Button2"/>
+            <Button Grid.Row="1" Grid.Column="0"
+            Clicked="OnButtonClicked"
+            x:Name="Button3"/>
+            <Button Grid.Row="1" Grid.Column="1"
+            Clicked="OnButtonClicked"
+            x:Name="Button4"/>
+            <Button Grid.Row="1" Grid.Column="2"
+            Clicked="OnButtonClicked"
+            x:Name="Button5"/>
+            <Button Grid.Row="2" Grid.Column="0"
+            Clicked="OnButtonClicked"
+            x:Name="Button6"/>
+            <Button Grid.Row="2" Grid.Column="1"
+            Clicked="OnButtonClicked"
+            x:Name="Button7"/>
+            <Button Grid.Row="2" Grid.Column="2"
+            Clicked="OnButtonClicked"
+            x:Name="Button8"/>
+        </Grid>
+
+    </StackLayout>
+    
+
+</ContentPage>
