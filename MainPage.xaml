@@ -2,19 +2,30 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TicTacToe.MainPage"
-             Title="MAUI Tic-Tac-Toe">
+             Title="TicTacToe 2025 - Ponganos 100 profe"
+             BackgroundColor="#F0F0F0">
 
-    <StackLayout Spacing="10" Padding="20">
+    <StackLayout Spacing="15" Padding="20">
 
-        <Label HorizontalOptions="End" x:Name="Player1WinsLabel" Text="Player 1 Wins: 0"/>
-        <Label HorizontalOptions="End" x:Name="Player2WinsLabel" Text="Player 2 Wins: 0"/>
-        <Button HorizontalOptions="End" Text="Reset Win Tally" Clicked="OnResetTallyClicked"/>
+        <!-- Etiquetas de victoria -->
+        <Label HorizontalOptions="Center" FontSize="18" x:Name="Player1WinsLabel" Text="Victorias del jugador 1: 0" TextColor="#333"/>
+        <Label HorizontalOptions="Center" FontSize="18" x:Name="Player2WinsLabel" Text="Victorias del jugador 2: 0" TextColor="#333"/>
 
-        <Grid RowSpacing="10" ColumnSpacing="10">
+        <!-- Botón para reiniciar el marcador -->
+        <Button HorizontalOptions="Center" Text="Reiniciar marcador" Clicked="OnResetTallyClicked" BackgroundColor="#FF6B6B" TextColor="White" CornerRadius="10"/>
+
+        <!-- Opciones de modo de juego -->
+        <VerticalStackLayout Spacing="10" Margin="0,20,0,10">
+            <Button Text="Jugador vs Jugador" Clicked="OnPvPClicked" BackgroundColor="#1E90FF" TextColor="White" CornerRadius="10"/>
+            <Button Text="Jugador vs Máquina" Clicked="OnPvAIClicked" BackgroundColor="#4CAF50" TextColor="White" CornerRadius="10"/>
+        </VerticalStackLayout>
+
+        <!-- Tablero de juego -->
+        <Grid RowSpacing="10" ColumnSpacing="10" HeightRequest="360" WidthRequest="360" HorizontalOptions="Center">
             <Grid.RowDefinitions>
-                <RowDefinition Height="150"/>
-                <RowDefinition Height="150"/>
-                <RowDefinition Height="150"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -22,36 +33,17 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Row="0" Grid.Column="0"
-            Clicked="OnButtonClicked"
-            x:Name="Button0"/>
-            <Button Grid.Row="0" Grid.Column="1"
-            Clicked="OnButtonClicked"
-            x:Name="Button1"/>
-            <Button Grid.Row="0" Grid.Column="2"
-            Clicked="OnButtonClicked"
-            x:Name="Button2"/>
-            <Button Grid.Row="1" Grid.Column="0"
-            Clicked="OnButtonClicked"
-            x:Name="Button3"/>
-            <Button Grid.Row="1" Grid.Column="1"
-            Clicked="OnButtonClicked"
-            x:Name="Button4"/>
-            <Button Grid.Row="1" Grid.Column="2"
-            Clicked="OnButtonClicked"
-            x:Name="Button5"/>
-            <Button Grid.Row="2" Grid.Column="0"
-            Clicked="OnButtonClicked"
-            x:Name="Button6"/>
-            <Button Grid.Row="2" Grid.Column="1"
-            Clicked="OnButtonClicked"
-            x:Name="Button7"/>
-            <Button Grid.Row="2" Grid.Column="2"
-            Clicked="OnButtonClicked"
-            x:Name="Button8"/>
+            <!-- Botones del tablero -->
+            <Button Grid.Row="0" Grid.Column="0" Clicked="OnButtonClicked" x:Name="Button0" FontSize="32"/>
+            <Button Grid.Row="0" Grid.Column="1" Clicked="OnButtonClicked" x:Name="Button1" FontSize="32"/>
+            <Button Grid.Row="0" Grid.Column="2" Clicked="OnButtonClicked" x:Name="Button2" FontSize="32"/>
+            <Button Grid.Row="1" Grid.Column="0" Clicked="OnButtonClicked" x:Name="Button3" FontSize="32"/>
+            <Button Grid.Row="1" Grid.Column="1" Clicked="OnButtonClicked" x:Name="Button4" FontSize="32"/>
+            <Button Grid.Row="1" Grid.Column="2" Clicked="OnButtonClicked" x:Name="Button5" FontSize="32"/>
+            <Button Grid.Row="2" Grid.Column="0" Clicked="OnButtonClicked" x:Name="Button6" FontSize="32"/>
+            <Button Grid.Row="2" Grid.Column="1" Clicked="OnButtonClicked" x:Name="Button7" FontSize="32"/>
+            <Button Grid.Row="2" Grid.Column="2" Clicked="OnButtonClicked" x:Name="Button8" FontSize="32"/>
         </Grid>
-
     </StackLayout>
-    
 
 </ContentPage>

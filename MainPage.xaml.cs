@@ -1,13 +1,19 @@
-﻿using Microsoft.Maui.Graphics.Text;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TicTacToe
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-        private int player1Wins = 0;
-        private int player2Wins = 0;
-        private bool isPlayerOneTurn = true;
+        int player1Wins = 0;
+        int player2Wins = 0;
+        bool isPlayerOneTurn = true;
+        enum GameMode { PvP, PvAI }
+        GameMode currentGameMode = GameMode.PvP;
 
         public MainPage()
         {
@@ -18,92 +24,235 @@ namespace TicTacToe
         {
             var button = sender as Button;
 
-            if (button != null && button.Text == null)
+            if (button != null && string.IsNullOrEmpty(button.Text))
             {
                 button.Text = isPlayerOneTurn ? "X" : "O";
                 button.Background = new SolidColorBrush(isPlayerOneTurn ? Colors.Blue : Colors.Green);
-                isPlayerOneTurn = !isPlayerOneTurn;
                 button.IsEnabled = false;
-                CheckForWinner();
+
+                if (CheckForWinner())
+                {
+                    if (isPlayerOneTurn)
+                    {
+                        player1Wins++;
+                        Player1WinsLabel.Text = $"Victorias del jugador 1: {player1Wins}";
+                    }
+                    else
+                    {
+                        player2Wins++;
+                        Player2WinsLabel.Text = $"Victorias del jugador 2: {player2Wins}";
+                    }
+
+                    await DisplayAlert("Fin del juego", $"Jugador {(isPlayerOneTurn ? 1 : 2)} gana!", "OK");
+                    ResetGame();
+                    return;
+                }
+                else if (IsDraw())
+                {
+                    await DisplayAlert("Fin del juego", "Empate!", "OK");
+                    ResetGame();
+                    return;
+                }
+
+                isPlayerOneTurn = !isPlayerOneTurn;
+
+                if (currentGameMode == GameMode.PvAI && !isPlayerOneTurn)
+                {
+                    await MakeAIMove();
+                }
+            }
+        }
+
+        private async Task MakeAIMove()
+        {
+            await Task.Delay(1000); // Retraso de 1.5 segundos para simular "pensamiento"
+            int bestMove = GetBestMove();
+
+            if (bestMove != -1)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Button aiButton = GetButton(bestMove);
+                    aiButton.Text = "O";
+                    aiButton.Background = new SolidColorBrush(Colors.Green);
+                    aiButton.IsEnabled = false;
+
+                    if (CheckForWinner())
+                    {
+                        player2Wins++;
+                        Player2WinsLabel.Text = $"Victorias del jugador 2: {player2Wins}";
+                        DisplayAlert("Fin del juego", "La máquina gana!", "OK");
+                        ResetGame();
+                        return;
+                    }
+                    else if (IsDraw())
+                    {
+                        DisplayAlert("Fin del juego", "Empate!", "OK");
+                        ResetGame();
+                        return;
+                    }
+
+                    isPlayerOneTurn = true;
+                });
+            }
+        }
+
+        private int GetBestMove()
+        {
+            string[,] board = GetBoard();
+            int bestScore = int.MinValue;
+            int move = -1;
+
+            for (int i = 0; i < 9; i++)
+            {
+                int row = i / 3;
+                int col = i % 3;
+
+                if (string.IsNullOrEmpty(board[row, col]))
+                {
+                    board[row, col] = "O"; // Máquina simula su jugada
+                    int score = Minimax(board, 0, false);
+                    board[row, col] = "";
+
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
             }
 
-            if (CheckForWinner())
+            return move;
+        }
+
+        private int Minimax(string[,] board, int depth, bool isMaximizing)
+        {
+            string result = CheckWinner(board);
+            if (result != null)
             {
-                if (!isPlayerOneTurn) // Check who the winner is
+                if (result == "O") return 10 - depth;
+                if (result == "X") return depth - 10;
+                if (result == "draw") return 0;
+            }
+
+            if (isMaximizing)
+            {
+                int bestScore = int.MinValue;
+
+                for (int i = 0; i < 9; i++)
                 {
-                    player1Wins++;
-                    Player1WinsLabel.Text = $"Jugador 1 gana : {player1Wins}";
-                }
-                else
-                {
-                    player2Wins++;
-                    Player2WinsLabel.Text = $"Jugador 2 gana : {player2Wins}";
+                    int row = i / 3;
+                    int col = i % 3;
+
+                    if (string.IsNullOrEmpty(board[row, col]))
+                    {
+                        board[row, col] = "O";
+                        int score = Minimax(board, depth + 1, false);
+                        board[row, col] = "";
+                        bestScore = Math.Max(score, bestScore);
+                    }
                 }
 
-                await DisplayAlert("Fin del juego", $"Jugador {(isPlayerOneTurn ? 2 : 1)} Gana!", "OK");
-                ResetGame();
+                return bestScore;
             }
-            else if (IsDraw())
+            else
             {
-                await DisplayAlert("Fin del juego", "Han empatado!", "OK");
-                ResetGame();
+                int bestScore = int.MaxValue;
+
+                for (int i = 0; i < 9; i++)
+                {
+                    int row = i / 3;
+                    int col = i % 3;
+
+                    if (string.IsNullOrEmpty(board[row, col]))
+                    {
+                        board[row, col] = "X";
+                        int score = Minimax(board, depth + 1, true);
+                        board[row, col] = "";
+                        bestScore = Math.Min(score, bestScore);
+                    }
+                }
+
+                return bestScore;
             }
+        }
+
+        private string CheckWinner(string[,] board)
+        {
+            // Check rows and columns
+            for (int i = 0; i < 3; i++)
+            {
+                if (!string.IsNullOrEmpty(board[i, 0]) &&
+                    board[i, 0] == board[i, 1] && board[i, 1] == board[i, 2])
+                    return board[i, 0];
+
+                if (!string.IsNullOrEmpty(board[0, i]) &&
+                    board[0, i] == board[1, i] && board[1, i] == board[2, i])
+                    return board[0, i];
+            }
+
+            // Diagonals
+            if (!string.IsNullOrEmpty(board[0, 0]) &&
+                board[0, 0] == board[1, 1] && board[1, 1] == board[2, 2])
+                return board[0, 0];
+
+            if (!string.IsNullOrEmpty(board[0, 2]) &&
+                board[0, 2] == board[1, 1] && board[1, 1] == board[2, 0])
+                return board[0, 2];
+
+            // Draw
+            bool draw = true;
+            foreach (var cell in board)
+            {
+                if (string.IsNullOrEmpty(cell))
+                    draw = false;
+            }
+
+            return draw ? "draw" : null;
+        }
+
+        private string[,] GetBoard()
+        {
+            return new string[3, 3]
+            {
+                { Button0.Text ?? "", Button1.Text ?? "", Button2.Text ?? "" },
+                { Button3.Text ?? "", Button4.Text ?? "", Button5.Text ?? "" },
+                { Button6.Text ?? "", Button7.Text ?? "", Button8.Text ?? "" }
+            };
+        }
+
+        private Button GetButton(int index)
+        {
+            return index switch
+            {
+                0 => Button0,
+                1 => Button1,
+                2 => Button2,
+                3 => Button3,
+                4 => Button4,
+                5 => Button5,
+                6 => Button6,
+                7 => Button7,
+                8 => Button8,
+                _ => throw new ArgumentOutOfRangeException(nameof(index))
+            };
         }
 
         private bool CheckForWinner()
         {
-            string[,] grid = new string[3, 3];
-
-            // Fill the grid with the current state
-            grid[0, 0] = Button0.Text;
-            grid[0, 1] = Button1.Text;
-            grid[0, 2] = Button2.Text;
-            grid[1, 0] = Button3.Text;
-            grid[1, 1] = Button4.Text;
-            grid[1, 2] = Button5.Text;
-            grid[2, 0] = Button6.Text;
-            grid[2, 1] = Button7.Text;
-            grid[2, 2] = Button8.Text;
-
-            // Check rows
-            for (int i = 0; i < 3; i++)
-            {
-                if (!string.IsNullOrEmpty(grid[i, 0]) &&
-                    grid[i, 0] == grid[i, 1] && grid[i, 1] == grid[i, 2])
-                    return true;
-            }
-
-            // Check columns
-            for (int i = 0; i < 3; i++)
-            {
-                if (!string.IsNullOrEmpty(grid[0, i]) &&
-                    grid[0, i] == grid[1, i] && grid[1, i] == grid[2, i])
-                    return true;
-            }
-
-            // Check diagonals
-            if (!string.IsNullOrEmpty(grid[0, 0]) &&
-                grid[0, 0] == grid[1, 1] && grid[1, 1] == grid[2, 2])
-                return true;
-
-            if (!string.IsNullOrEmpty(grid[0, 2]) &&
-                grid[0, 2] == grid[1, 1] && grid[1, 1] == grid[2, 0])
-                return true;
-
-            return false;
+            string result = CheckWinner(GetBoard());
+            return result == "X" || result == "O";
         }
 
         private bool IsDraw()
         {
-            return Button0.Text != null && Button1.Text != null && Button2.Text != null && Button3.Text != null
-                && Button4.Text != null && Button5.Text != null && Button6.Text != null && Button7.Text != null
-                && Button8.Text != null;
+            return !CheckForWinner() && GetBoard().Cast<string>().All(cell => !string.IsNullOrEmpty(cell));
         }
 
         private void ResetGame()
         {
-            Button[] buttons = { Button0, Button1, Button2, Button3, Button4, Button5, Button6, Button7, Button8 }; 
-            
+            Button[] buttons = { Button0, Button1, Button2, Button3, Button4, Button5, Button6, Button7, Button8 };
+
             foreach (Button button in buttons)
             {
                 button.Text = null;
@@ -120,6 +269,18 @@ namespace TicTacToe
             player2Wins = 0;
             Player1WinsLabel.Text = "Victorias del jugador 1: 0";
             Player2WinsLabel.Text = "Victorias del jugador 2: 0";
+        }
+
+        private void OnPvPClicked(object sender, EventArgs e)
+        {
+            currentGameMode = GameMode.PvP;
+            ResetGame();
+        }
+
+        private void OnPvAIClicked(object sender, EventArgs e)
+        {
+            currentGameMode = GameMode.PvAI;
+            ResetGame();
         }
     }
 }
