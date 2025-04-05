@@ -49,6 +49,7 @@ namespace TicTacToe
                 }
                 else if (IsDraw())
                 {
+                    await Task.Delay(800);
                     await DisplayAlert("Fin del juego", "Empate!", "OK");
                     ResetGame();
                     return;
@@ -65,37 +66,84 @@ namespace TicTacToe
 
         private async Task MakeAIMove()
         {
-            await Task.Delay(1000); // Retraso de 1.5 segundos para simular "pensamiento"
-            int bestMove = GetBestMove();
+            DisableButtons();  // Deshabilitar los botones para evitar que el jugador haga clic durante el turno de la IA
+
+            await Task.Delay(800); // Retraso para simular "pensamiento"
+
+            int bestMove = GetBestMove(); // Llama al Minimax para decidir el mejor movimiento
 
             if (bestMove != -1)
             {
-                await MainThread.InvokeOnMainThreadAsync(() =>
+                await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
                     Button aiButton = GetButton(bestMove);
-                    aiButton.Text = "O";
+                    aiButton.Text = "O"; // Movimiento de la IA
                     aiButton.Background = new SolidColorBrush(Colors.Green);
                     aiButton.IsEnabled = false;
 
+                    // Verifica si la IA ha ganado
                     if (CheckForWinner())
                     {
+                        await Task.Delay(800); // Mostrar la jugada de la IA por 1 segundo antes de mostrar el mensaje de victoria
                         player2Wins++;
                         Player2WinsLabel.Text = $"Victorias del jugador 2: {player2Wins}";
-                        DisplayAlert("Fin del juego", "La máquina gana!", "OK");
+                        await DisplayWinner("La máquina gana!"); // Muestra la victoria de la IA
                         ResetGame();
                         return;
                     }
+                    // Verifica si hay empate
                     else if (IsDraw())
                     {
-                        DisplayAlert("Fin del juego", "Empate!", "OK");
+                        await DisplayDraw(); // Muestra el empate
                         ResetGame();
                         return;
                     }
 
-                    isPlayerOneTurn = true;
+                    isPlayerOneTurn = true; // Cambia el turno al jugador 1
+                    EnableButtons(); // Habilita los botones nuevamente después de que la IA haya jugado
                 });
             }
         }
+
+        // Función para deshabilitar todos los botones del tablero (para bloquear los movimientos del jugador)
+        private void DisableButtons()
+        {
+            Button0.IsEnabled = false;
+            Button1.IsEnabled = false;
+            Button2.IsEnabled = false;
+            Button3.IsEnabled = false;
+            Button4.IsEnabled = false;
+            Button5.IsEnabled = false;
+            Button6.IsEnabled = false;
+            Button7.IsEnabled = false;
+            Button8.IsEnabled = false;
+        }
+
+        // Función para habilitar todos los botones del tablero después del turno de la IA
+        private void EnableButtons()
+        {
+            Button0.IsEnabled = true;
+            Button1.IsEnabled = true;
+            Button2.IsEnabled = true;
+            Button3.IsEnabled = true;
+            Button4.IsEnabled = true;
+            Button5.IsEnabled = true;
+            Button6.IsEnabled = true;
+            Button7.IsEnabled = true;
+            Button8.IsEnabled = true;
+        }
+
+
+        private async Task DisplayWinner(string message)
+        {
+            await DisplayAlert("Fin del juego", message, "OK");
+        }
+
+        private async Task DisplayDraw()
+        {
+            await DisplayAlert("Fin del juego", "Empate!", "OK");
+        }
+
 
         private int GetBestMove()
         {
